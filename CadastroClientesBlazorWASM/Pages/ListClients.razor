@@ -1,0 +1,46 @@
+﻿@page "/AllClients"
+@inject HttpClient Http
+
+
+<MudTable Items="clientes" Dense="false" Hover="true" Bordered="false" Striped="true">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Clientes</MudText>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>Nome</MudTh>
+        <MudTh>CPF</MudTh>
+        <MudTh>Editar</MudTh>
+        <MudTh>Excluir</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Nome">@context.Nome</MudTd>
+        <MudTd DataLabel="CPF">@context.Cpf</MudTd>
+        <MudTd DataLabel="Editar"></MudTd>
+        <MudTd DataLabel="Excluir"></MudTd>
+    </RowTemplate>
+</MudTable>
+
+
+
+
+@code {
+    private WeatherForecast[]? forecasts;
+
+    public List<Clientes> clientes { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json");
+    }
+
+    public class WeatherForecast
+    {
+        public DateTime Date { get; set; }
+
+        public int TemperatureC { get; set; }
+
+        public string? Summary { get; set; }
+
+        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    }
+}

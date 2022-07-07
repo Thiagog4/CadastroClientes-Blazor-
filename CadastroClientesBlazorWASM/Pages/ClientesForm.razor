@@ -1,0 +1,120 @@
+﻿@page "/ClientesForm"
+
+<h4>Formulario</h4>
+<p>Ao clilcar no botao, voce troca os componentes que estou usando de uma biblioteca para os componentes nativos do BLAZOR</p>
+<button class="btn btn-primary mt-5 mb-5" @onclick="switchScreenType">Trocar</button>
+@if(switchScreen == true)
+{
+    <EditForm Model="clientes" OnValidSubmit="handleSendClient">
+    <DataAnnotationsValidator />
+    <label>CPF</label>
+    <InputText class="form-control" @bind-Value="clientes.Cpf" />
+    <ValidationMessage For="() => clientes.Cpf" />
+
+    <label>Nome</label>
+    <InputText class="form-control" @bind-Value="clientes.Nome" />
+    <ValidationMessage For="() => clientes.Nome" />
+
+    <label>CEP</label>
+    <InputText class="form-control" @bind-Value="clientes.Cep" />
+    <ValidationMessage For="() => clientes.Cep" />
+
+    <label>Endereço</label>
+    <InputText class="form-control" @bind-Value="clientes.Endereco" />
+    <ValidationMessage For="() => clientes.Endereco" />
+
+    <label>Numero</label>
+    <InputText class="form-control" @bind-Value="clientes.Numero" />
+    <ValidationMessage For="() => clientes.Numero" />
+
+    <label>Complemento</label>
+    <InputText class="form-control" @bind-Value="clientes.Complemento" />
+    <ValidationMessage For="() => clientes.Complemento" />
+
+    <label>E-mail</label>
+    <InputText class="form-control" @bind-Value="clientes.Email" />
+    <ValidationMessage For="() => clientes.Email" />
+
+    <label>Celular</label>
+    <InputText class="form-control" @bind-Value="clientes.Celular" />
+    <ValidationMessage For="() => clientes.Celular" />
+
+    <label>Estado Civil</label>
+    <InputText class="form-control" @bind-Value="clientes.EstadoCivil" />
+    <ValidationMessage For="() => clientes.EstadoCivil" />
+
+    <button type="submit" class="btn btn-primary mt-5">Cadastrar</button>
+
+</EditForm>
+}
+else
+{
+<EditForm Model="clientes" OnValidSubmit="handleSendClient">
+    <DataAnnotationsValidator />
+
+    <MudTextField Label="CPF" @bind-Value="clientes.Cpf" />
+    <ValidationMessage For="() => clientes.Cpf" />
+
+
+    <MudTextField Label="Nome" @bind-Value="clientes.Nome" />
+    <ValidationMessage For="() => clientes.Nome" />
+
+
+    <MudTextField Label="Cep" @bind-Value="clientes.Cep" />
+    <ValidationMessage For="() => clientes.Cep" />
+
+
+    <MudTextField Label="Endereco" @bind-Value="clientes.Endereco" />
+    <ValidationMessage For="() => clientes.Endereco" />
+
+
+    <MudTextField Label="Numero" @bind-Value="clientes.Numero" />
+    <ValidationMessage For="() => clientes.Numero" />
+
+
+    <MudTextField Label="Complemento" @bind-Value="clientes.Complemento" />
+    <ValidationMessage For="() => clientes.Complemento" />
+
+
+    <MudTextField Label="Email" @bind-Value="clientes.Email" />
+    <ValidationMessage For="() => clientes.Email" />
+
+
+    <MudTextField Label="Celular" @bind-Value="clientes.Celular" />
+    <ValidationMessage For="() => clientes.Celular" />
+
+
+    <MudTextField Label="EstadoCivil" @bind-Value="clientes.EstadoCivil" />
+    <ValidationMessage For="() => clientes.EstadoCivil" />
+
+    <button type="submit" class="btn btn-primary mt-5">Cadastrar</button>
+</EditForm>
+}
+
+
+@code {
+    private int currentCount = 0;
+
+    public Clientes clientes { get; set; } = new();
+
+    public bool switchScreen { get; set; } = false;
+
+    private void handleSendClient()
+    {
+        currentCount++;
+    }
+
+    private void switchScreenType()
+    {
+        if (switchScreen)
+        {
+            switchScreen = false;
+            StateHasChanged();
+        }
+        else
+        {
+            switchScreen = true;
+            StateHasChanged();
+        }
+    }
+}
