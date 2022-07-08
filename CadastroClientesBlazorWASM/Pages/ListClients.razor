@@ -4,9 +4,10 @@
 @inject IDialogService DialogService
 
 
-<MudTable Items="@clientes" Dense="false" Hover="true" Bordered="false" Striped="true">
+<MudTable Items="@clientes" Dense="false" Hover="true" Bordered="false" Striped="true"  Filter="new Func<Clientes,bool>(FilterFunc1)" @bind-SelectedItem="selectedItem1">
     <ToolBarContent>
         <MudText Typo="Typo.h6">Clientes</MudText>
+        <MudTextField @bind-Value="searchString1" Placeholder="Digite Nome ou CPF" Adornment="Adornment.Start"  AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
     </ToolBarContent>
     <HeaderContent>
         <MudTh>Nome</MudTh>
@@ -76,11 +77,34 @@
 
 @code {
 
-    public List<Clientes> clientes { get; set; } = new List<Clientes>();
+    
+    //config do dialog-inline
+    private DialogOptions dialogOptions = new() { MaxWidth = MaxWidth.Medium, CloseButton = true };
+    //inicializacoes e variaveis
+    private Clientes selectedItem1 = null;
+    private string searchString1 = "";
+    public IEnumerable<Clientes> clientes { get; set; } = new List<Clientes>();
+    private HashSet<Clientes> selectedItems = new HashSet<Clientes>();
     public Clientes clienteone { get; set; } = new Clientes();
     private bool visible;
-    private DialogOptions dialogOptions = new() { MaxWidth = MaxWidth.Medium, CloseButton = true };
 
+
+    // dispara a pesquisa na tabela pesquisa
+    private bool FilterFunc1(Clientes element) => FilterFunc(element, searchString1);
+    private bool FilterFunc(Clientes element, string searchString)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (element.Nome.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.Cpf.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        return false;
+    }
+
+
+
+    //conf do alerta
     async Task ConfigAlerta(string texto, string btntexto1, Color color)
     {
         var parameters = new DialogParameters();
@@ -92,22 +116,27 @@
 
         DialogService.Show<DialogAlert>("Alerta!", parameters, options);
     }
-
+    //qundo inicia a pagina
     protected override async Task OnInitializedAsync()
     {
         await GetClients();
     }
 
+
+    //busca api de clientes
     async Task GetClients()
     {
         clientes = await Http.GetFromJsonAsync<List<Clientes>>("https://apiclientesapi.azure-api.net/v1/api/DadosClientes1/");
     }
 
+
+    //busca api de UM cliente
     async Task GetClientOne(int id)
     {
         clienteone = await Http.GetFromJsonAsync<Clientes>("https://apiclientesapi.azure-api.net/v1/api/DadosClientes1/" + id);
     }
 
+    //deleta os cliente na api
     async void DeleteClient(int id)
     {
         bool? result = await DialogService.ShowMessageBox(
@@ -131,15 +160,14 @@
         }
     }
 
-
-
+    //abre o dialog 
     async void EditClient(int id)
     {
         await GetClientOne(id);
         visible = true;
         StateHasChanged();
     }
-
+    //envio o put para edicao do cliente
     async void handleSendClient()
     {
         var resp =  await Http.PutAsJsonAsync<Clientes>("https://apiclientesapi.azure-api.net/v1/api/DadosClientes1/" + clienteone.Id,clienteone);

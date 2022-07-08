@@ -1,6 +1,7 @@
 ﻿@page "/ClientesForm"
 @inject HttpClient http
 @inject IDialogService DialogService
+@inject Validacoes validacoes
 
 
 
@@ -12,7 +13,7 @@
     <EditForm Model="clientes" OnValidSubmit="handleSendClient">
     <DataAnnotationsValidator />
     <label>CPF</label>
-    <input type="number" @bind-value:event="oninput"  class="form-control" @bind-value="clientes.Cpf" />
+    <input type="number" @bind-value:event="oninput"  class="form-control"  @bind-value="clientes.Cpf" />
     <ValidationMessage For="() => clientes.Cpf" />
 
     <label>Nome</label>
@@ -52,53 +53,54 @@
 }
 else
 {
-<EditForm Model="clientes" OnValidSubmit="handleSendClient">
-    <DataAnnotationsValidator />
+    <EditForm Model="clientes" OnValidSubmit="handleSendClient">
+        <DataAnnotationsValidator />
 
-    <MudTextField Label="CPF" @bind-Value="clientes.Cpf" />
-    <ValidationMessage For="() => clientes.Cpf" />
-
-
-    <MudTextField Label="Nome" @bind-Value="clientes.Nome" />
-    <ValidationMessage For="() => clientes.Nome" />
-
-
-    <MudTextField Label="Cep" @bind-Value="clientes.Cep" />
-    <ValidationMessage For="() => clientes.Cep" />
-
-
-    <MudTextField Label="Endereco" @bind-Value="clientes.Endereco" />
-    <ValidationMessage For="() => clientes.Endereco" />
+        <MudSwitch Label="Verificar CPF?" @bind-Checked="@Basic_Switch1" Color="Color.Primary" />
+        @if(Basic_Switch1)
+        {
+            <MudTextField TextChanged="OnVerificaCpf" Label="CPF" For="@(() => clientes.Cpf)" Value="clientes.Cpf" />
+        }
+        else
+        {
+            <MudTextField  Label="CPF" For="@(() => clientes.Cpf)" @bind-Value="clientes.Cpf" />
+        }
 
 
-    <MudTextField Label="Numero" @bind-Value="clientes.Numero" />
-    <ValidationMessage For="() => clientes.Numero" />
+        
+        
+
+        <MudTextField Label="Nome" For="@(() => clientes.Nome)" @bind-Value="clientes.Nome" />
+
+        <MudTextField For="@(() => clientes.Cep)" Label="Cep" @bind-Value="clientes.Cep"/>
+
+        <MudTextField Label="Endereco" For="@(() => clientes.Endereco)" @bind-Value="clientes.Endereco" />
+
+        <MudTextField Label="Numero" For="@(() => clientes.Numero)" @bind-Value="clientes.Numero" />
+
+        <MudTextField Label="Complemento" For="@(() => clientes.Complemento)" @bind-Value="clientes.Complemento" />
 
 
-    <MudTextField Label="Complemento" @bind-Value="clientes.Complemento" />
-    <ValidationMessage For="() => clientes.Complemento" />
+        <MudTextField Label="Email" For="@(() => clientes.Email)" @bind-Value="clientes.Email" />
 
 
-    <MudTextField Label="Email" @bind-Value="clientes.Email" />
-    <ValidationMessage For="() => clientes.Email" />
+
+        <MudTextField Label="Celular" For="@(() => clientes.Celular)" @bind-Value="clientes.Celular" />
 
 
-    <MudTextField Label="Celular" @bind-Value="clientes.Celular" />
-    <ValidationMessage For="() => clientes.Celular" />
+
+        <MudTextField Label="EstadoCivil" For="@(() => clientes.EstadoCivil)" @bind-Value="clientes.EstadoCivil" />
 
 
-    <MudTextField Label="EstadoCivil" @bind-Value="clientes.EstadoCivil" />
-    <ValidationMessage For="() => clientes.EstadoCivil" />
-
-    <button type="submit" class="btn btn-primary mt-5">Cadastrar</button>
-</EditForm>
+        <button type="submit" class="btn btn-primary mt-5">Cadastrar</button>
+    </EditForm>
 }
 
 
 @code {
 
 
-
+    //Configuracao para o Component DialogAlert
     async Task ConfigAlerta(string texto, string btntexto1, Color color)
     {
         var parameters = new DialogParameters();
@@ -113,10 +115,14 @@ else
 
 
     public Clientes clientes { get; set; } = new();
-
+    
+    public bool Basic_Switch1 { get; set; } = false;
 
     public bool switchScreen { get; set; } = false;
+    
 
+
+    // disparado para enviar o cliente para a api's 
     private async void handleSendClient()
     {
         var ret = await http.PostAsJsonAsync<Clientes>("https://apiclientesapi.azure-api.net/v1/api/DadosClientes1/", clientes);
@@ -125,7 +131,7 @@ else
             await ConfigAlerta("Cadastrado com sucesso", "OK", Color.Success);
             clientes = new();
             StateHasChanged();
-            
+
         }
         else
         {
@@ -133,6 +139,30 @@ else
         }
     }
 
+
+    //disparado para verificacao do cpf
+    async Task OnVerificaCpf(string cpf)
+    {
+        if (!String.IsNullOrEmpty(cpf))
+        {
+            clientes.Cpf = cpf;
+
+
+            // Valida o CPF
+            if (validacoes.ValidaCPF(cpf) == false)
+            {
+                await ConfigAlerta("Digite um cpf valido", "OK", Color.Dark);
+            }
+        }
+        else
+        {
+
+            await ConfigAlerta("Digite um CPF", "OK", Color.Dark);
+        }
+    }
+
+
+    //muda a tela para os formatos dos inputs
     private void switchScreenType()
     {
         if (switchScreen)
