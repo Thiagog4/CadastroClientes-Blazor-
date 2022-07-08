@@ -7,7 +7,7 @@ namespace CadastroClientesBlazorWASM.Models
 
         public int Id { get; set; }
         [Required(ErrorMessage ="CPF obrigatorio")]
-        [StringLength(11)]
+        [StringLength(11, ErrorMessage ="Esse campo precisa ter 11 caracteres")]
         public string Cpf { get; set; }
 
 
@@ -16,12 +16,13 @@ namespace CadastroClientesBlazorWASM.Models
 
 
         [Required(ErrorMessage = "Celular obrigatorio")]
+        [MaxLength(11, ErrorMessage = "Numero max de caracteres permitos 11")]
         public string Celular { get; set; }
 
 
         [Required(ErrorMessage = "CEP obrigatorio")]
+        [MaxLength(11, ErrorMessage = "Numero max de caracteres permitos 9")]
         public string? Cep { get; set; }
-
 
         [Required(ErrorMessage = "Endereço obrigatorio")]
         public string Endereco { get; set; }

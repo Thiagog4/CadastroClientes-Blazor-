@@ -1,4 +1,8 @@
 ﻿@page "/ClientesForm"
+@inject HttpClient http
+@inject IDialogService DialogService
+
+
 
 <h4>Formulario</h4>
 <p>Ao clilcar no botao, voce troca os componentes que estou usando de uma biblioteca para os componentes nativos do BLAZOR</p>
@@ -8,39 +12,38 @@
     <EditForm Model="clientes" OnValidSubmit="handleSendClient">
     <DataAnnotationsValidator />
     <label>CPF</label>
-    <InputText class="form-control" @bind-Value="clientes.Cpf" />
+    <input type="number" @bind-value:event="oninput"  class="form-control" @bind-value="clientes.Cpf" />
     <ValidationMessage For="() => clientes.Cpf" />
 
     <label>Nome</label>
-    <InputText class="form-control" @bind-Value="clientes.Nome" />
+    <input class="form-control" @bind-value="clientes.Nome" />
     <ValidationMessage For="() => clientes.Nome" />
 
     <label>CEP</label>
-    <InputText class="form-control" @bind-Value="clientes.Cep" />
+     <input type="number" @bind-value:event="oninput" class="form-control" @bind-value="clientes.Cep" />
     <ValidationMessage For="() => clientes.Cep" />
 
     <label>Endereço</label>
-    <InputText class="form-control" @bind-Value="clientes.Endereco" />
+    <input class="form-control" @bind-value="clientes.Endereco" />
     <ValidationMessage For="() => clientes.Endereco" />
-
     <label>Numero</label>
-    <InputText class="form-control" @bind-Value="clientes.Numero" />
+    <input class="form-control" @bind-value="clientes.Numero" />
     <ValidationMessage For="() => clientes.Numero" />
 
     <label>Complemento</label>
-    <InputText class="form-control" @bind-Value="clientes.Complemento" />
+        <input class="form-control" @bind-value="clientes.Complemento" />
     <ValidationMessage For="() => clientes.Complemento" />
 
     <label>E-mail</label>
-    <InputText class="form-control" @bind-Value="clientes.Email" />
+        <input class="form-control" @bind-value="clientes.Email" />
     <ValidationMessage For="() => clientes.Email" />
 
     <label>Celular</label>
-    <InputText class="form-control" @bind-Value="clientes.Celular" />
+        <input type="number" @bind-value:event="oninput" class="form-control" @bind-value="clientes.Celular" />
     <ValidationMessage For="() => clientes.Celular" />
 
     <label>Estado Civil</label>
-    <InputText class="form-control" @bind-Value="clientes.EstadoCivil" />
+    <input class="form-control" @bind-value="clientes.EstadoCivil" />
     <ValidationMessage For="() => clientes.EstadoCivil" />
 
     <button type="submit" class="btn btn-primary mt-5">Cadastrar</button>
@@ -93,15 +96,41 @@ else
 
 
 @code {
-    private int currentCount = 0;
+
+
+
+    async Task ConfigAlerta(string texto, string btntexto1, Color color)
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("ContentText", texto);
+        parameters.Add("ButtonText", btntexto1);
+        parameters.Add("Color", color);
+
+        var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall };
+
+        DialogService.Show<DialogAlert>("Alerta!", parameters, options);
+    }
+
 
     public Clientes clientes { get; set; } = new();
 
+
     public bool switchScreen { get; set; } = false;
 
-    private void handleSendClient()
+    private async void handleSendClient()
     {
-        currentCount++;
+        var ret = await http.PostAsJsonAsync<Clientes>("https://apiclientesapi.azure-api.net/v1/api/DadosClientes1/", clientes);
+        if (ret.IsSuccessStatusCode)
+        {
+            await ConfigAlerta("Cadastrado com sucesso", "OK", Color.Success);
+            clientes = new();
+            StateHasChanged();
+            
+        }
+        else
+        {
+            await ConfigAlerta("Erro ao cadastrar", "OK", Color.Error);
+        }
     }
 
     private void switchScreenType()

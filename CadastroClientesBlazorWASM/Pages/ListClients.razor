@@ -1,8 +1,10 @@
 ﻿@page "/AllClients"
 @inject HttpClient Http
 
+@inject IDialogService DialogService
 
-<MudTable Items="clientes" Dense="false" Hover="true" Bordered="false" Striped="true">
+
+<MudTable Items="@clientes" Dense="false" Hover="true" Bordered="false" Striped="true">
     <ToolBarContent>
         <MudText Typo="Typo.h6">Clientes</MudText>
     </ToolBarContent>
@@ -15,32 +17,141 @@
     <RowTemplate>
         <MudTd DataLabel="Nome">@context.Nome</MudTd>
         <MudTd DataLabel="CPF">@context.Cpf</MudTd>
-        <MudTd DataLabel="Editar"></MudTd>
-        <MudTd DataLabel="Excluir"></MudTd>
+        <MudTd DataLabel="Editar"><MudButton OnClick="()=>EditClient(context.Id)" Variant="Variant.Filled" StartIcon="@Icons.Filled.Edit" Color="Color.Warning">Edit</MudButton></MudTd>
+        <MudTd DataLabel="Excluir"><MudButton OnClick="()=>DeleteClient(context.Id)" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error">Delete</MudButton></MudTd>
     </RowTemplate>
 </MudTable>
+
+
+<MudDialog @bind-IsVisible="visible" Options="dialogOptions" DisableSidePadding="true">
+    <DialogContent>
+        <h4>Dados Cadastro</h4>
+        <MudContainer>
+            <EditForm Model="clienteone" OnValidSubmit="handleSendClient">
+                <DataAnnotationsValidator />
+
+                <MudTextField Label="CPF" @bind-Value="clienteone.Cpf" />
+                <ValidationMessage For="() => clienteone.Cpf" />
+
+
+                <MudTextField Label="Nome" @bind-Value="clienteone.Nome" />
+                <ValidationMessage For="() => clienteone.Nome" />
+
+
+                <MudTextField Label="Cep" @bind-Value="clienteone.Cep" />
+                <ValidationMessage For="() => clienteone.Cep" />
+
+
+                <MudTextField Label="Endereco" @bind-Value="clienteone.Endereco" />
+                <ValidationMessage For="() => clienteone.Endereco" />
+
+
+                <MudTextField Label="Numero" @bind-Value="clienteone.Numero" />
+                <ValidationMessage For="() => clienteone.Numero" />
+
+
+                <MudTextField Label="Complemento" @bind-Value="clienteone.Complemento" />
+                <ValidationMessage For="() => clienteone.Complemento" />
+
+
+                <MudTextField Label="Email" @bind-Value="clienteone.Email" />
+                <ValidationMessage For="() => clienteone.Email" />
+
+
+                <MudTextField Label="Celular" @bind-Value="clienteone.Celular" />
+                <ValidationMessage For="() => clienteone.Celular" />
+
+
+                <MudTextField Label="EstadoCivil" @bind-Value="clienteone.EstadoCivil" />
+                <ValidationMessage For="() => clienteone.EstadoCivil" />
+
+                <button type="submit" class="btn btn-primary mt-5">Atualizar</button>
+            </EditForm>
+        </MudContainer>
+    </DialogContent>
+</MudDialog>
 
 
 
 
 @code {
-    private WeatherForecast[]? forecasts;
 
-    public List<Clientes> clientes { get; set; } = new();
+    public List<Clientes> clientes { get; set; } = new List<Clientes>();
+    public Clientes clienteone { get; set; } = new Clientes();
+    private bool visible;
+    private DialogOptions dialogOptions = new() { MaxWidth = MaxWidth.Medium, CloseButton = true };
+
+    async Task ConfigAlerta(string texto, string btntexto1, Color color)
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("ContentText", texto);
+        parameters.Add("ButtonText", btntexto1);
+        parameters.Add("Color", color);
+
+        var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall };
+
+        DialogService.Show<DialogAlert>("Alerta!", parameters, options);
+    }
 
     protected override async Task OnInitializedAsync()
     {
-        forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json");
+        await GetClients();
     }
 
-    public class WeatherForecast
+    async Task GetClients()
     {
-        public DateTime Date { get; set; }
+        clientes = await Http.GetFromJsonAsync<List<Clientes>>("https://apiclientesapi.azure-api.net/v1/api/DadosClientes1/");
+    }
 
-        public int TemperatureC { get; set; }
+    async Task GetClientOne(int id)
+    {
+        clienteone = await Http.GetFromJsonAsync<Clientes>("https://apiclientesapi.azure-api.net/v1/api/DadosClientes1/" + id);
+    }
 
-        public string? Summary { get; set; }
+    async void DeleteClient(int id)
+    {
+        bool? result = await DialogService.ShowMessageBox(
+           "Cuidado!",
+           "Deseja excluir o cadastro?",
+           yesText: "Delete!", cancelText: "Cancel");
 
-        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+        if (result == true)
+        {
+            var resp = await Http.DeleteAsync("https://apiclientesapi.azure-api.net/v1/api/DadosClientes1/" + id);
+            if (resp.IsSuccessStatusCode)
+            {
+                ConfigAlerta("Excluido com sucesso", "OK", Color.Success);
+                await GetClients();
+                StateHasChanged();
+            }
+            else
+            {
+                ConfigAlerta("Erro ao excluir", "OK", Color.Error);
+            }
+        }
+    }
+
+
+
+    async void EditClient(int id)
+    {
+        await GetClientOne(id);
+        visible = true;
+        StateHasChanged();
+    }
+
+    async void handleSendClient()
+    {
+        var resp =  await Http.PutAsJsonAsync<Clientes>("https://apiclientesapi.azure-api.net/v1/api/DadosClientes1/" + clienteone.Id,clienteone);
+        if(resp.IsSuccessStatusCode)
+        {
+            ConfigAlerta("Alterado com sucesso", "OK", Color.Success);
+            visible = false;
+            StateHasChanged();
+        }
+        else
+        {
+            ConfigAlerta("Erro ao alterar", "OK", Color.Error);
+        }
     }
 }
