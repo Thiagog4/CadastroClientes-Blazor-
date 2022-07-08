@@ -1,4 +1,4 @@
-# CadastroClientesBlazorWASMCancel changes
+# CadastroClientesBlazorWASM
 
 
 APP DE CADASTRO DE CLIENTES UTILIZANDO UM CRUD
