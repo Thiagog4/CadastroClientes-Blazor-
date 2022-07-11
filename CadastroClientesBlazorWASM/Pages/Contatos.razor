@@ -1,0 +1,99 @@
+﻿@page "/Contatos"
+
+@inject HttpClient Http
+
+@inject IDialogService DialogService
+
+<p>Ao selecionar um cliente do select, sera mostrado somente os cadastraos realizado por esse cliente</p>
+
+
+<label>Selecione um cliente</label>
+<select @onchange="GetContatos" class="form-control mb-5">
+    @foreach (var item in clientes)
+    {
+        <option  @bind-value:event="onchange" @bind-value="@item.Id">@item.Nome</option>
+    }
+    
+</select>
+
+
+@if(contatos == null)
+{
+    <h5>Carregando...</h5>
+}
+
+<MudTable Items="@contatostable" Dense="false" Hover="true" Bordered="false" Striped="true">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Contatos</MudText>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>Nome</MudTh>
+        <MudTh>Celular</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Nome">@context.Nome</MudTd>
+        <MudTd DataLabel="Celular">@context.Celular</MudTd>
+    </RowTemplate>
+</MudTable>
+}
+
+
+
+
+@*<MudTable Items="@clientes" Dense="false" Hover="true" Bordered="false" Striped="true" >
+    <ToolBarContent>
+        
+
+        <MudText Typo="Typo.h6">Clientes</MudText>
+        
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>Nome</MudTh>
+        <MudTh>CPF</MudTh>
+        <MudTh>Editar</MudTh>
+        <MudTh>Excluir</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Nome">@context.Nome</MudTd>
+        <MudTd DataLabel="Celular">@context.Cpf</MudTd>
+        
+    </RowTemplate>
+</MudTable>
+*@
+
+
+
+
+@code {
+    public List<Clientes> clientes { get; set; } = new();
+    public Clientes clienteone { get; set; } = new();
+
+
+
+    public List<ContatosModel> contatos { get; set; } = new List<ContatosModel>();
+    public List<ContatosModel> contatostable { get; set; } = new List<ContatosModel>();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetClientes();
+
+    }
+
+    async Task GetClientes()
+    {
+        clientes = await Http.GetFromJsonAsync<List<Clientes>>("https://apiclientesapi.azure-api.net/v1/api/DadosClientes1/");
+    }
+
+    async void GetContatos(ChangeEventArgs e)
+    {
+        clienteone = await Http.GetFromJsonAsync<Clientes>("https://apiclientesapi.azure-api.net/v1/api/DadosClientes1/" + e.Value);
+        contatos = await Http.GetFromJsonAsync<List<ContatosModel>>("https://apiclientesapi.azure-api.net/v1/api/Contatos/");
+
+        contatostable = contatos.FindAll(element => element.ClienteId == Convert.ToInt32(e.Value));
+
+        
+        StateHasChanged();
+    }
+
+}
