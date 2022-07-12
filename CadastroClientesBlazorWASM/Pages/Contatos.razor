@@ -25,6 +25,7 @@
 <MudTable Items="@contatostable" Dense="false" Hover="true" Bordered="false" Striped="true">
     <ToolBarContent>
         <MudText Typo="Typo.h6">Contatos</MudText>
+        <MudButton Variant="Variant.Filled">Novo</MudButton>
     </ToolBarContent>
     <HeaderContent>
         <MudTh>Nome</MudTh>
@@ -60,9 +61,6 @@
     </RowTemplate>
 </MudTable>
 *@
-
-
-
 
 @code {
     public List<Clientes> clientes { get; set; } = new();
